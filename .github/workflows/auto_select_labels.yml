@@ -29,11 +29,11 @@ jobs:
             let labels = new Set();
 
             for (const file of files.data) {
-              if (file.filename.startsWith('front/')) {
+              if (file.filename.startsWith('src/front/')) {
                 labels.add('frontend');
-              } else if (file.filename.startsWith('back/')) {
+              } else if (file.filename.startsWith('src/back/')) {
                 labels.add('backend');
-              } else if (file.filename.startsWith('api/')) {
+              } else if (file.filename.startsWith('src/api/')) {
                 labels.add('api');
               }
             }
