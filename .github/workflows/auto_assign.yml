@@ -1,0 +1,27 @@
+name: Auto Label PR based on Changes
+
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 100
+          ref: ${{ github.head_ref }}
+      - name: Add Assignee
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { number, user } = context.payload.pull_request;
+
+            await github.rest.issues.addAssignees({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: number,
+              assignees: [user.login]
+            });

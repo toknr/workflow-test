@@ -2,36 +2,40 @@ name: Auto Label PR based on Changes
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [ready_for_review]
 
 jobs:
   label:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 100
+          ref: ${{ github.head_ref }}
       - name: Set Label based on changes
         uses: actions/github-script@v3
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const issue_number = context.payload.pull_request.number;
             const repo = context.repo.repo;
             const owner = context.repo.owner;
-            const fs = require('fs');
-            const { execSync } = require('child_process');
 
             // PRの変更されたファイルを取得
-            const files = JSON.parse(execSync(`gh pr view --json files --jq .files[].path ${issue_number}`).toString());
+            const files = await github.pulls.listFiles({
+              owner,
+              repo,
+              pull_number: issue_number,
+            });
 
             let labels = new Set();
 
-            for (const file of files) {
-              if (file.startsWith('front/')) {
+            for (const file of files.data) {
+              if (file.filename.startsWith('src/front/')) {
                 labels.add('frontend');
-              } else if (file.startsWith('back/')) {
+              } else if (file.filename.startsWith('src/back/')) {
                 labels.add('backend');
-              } else if (file.startsWith('api/')) {
+              } else if (file.filename.startsWith('src/api/')) {
                 labels.add('documentation');
               }
             }
