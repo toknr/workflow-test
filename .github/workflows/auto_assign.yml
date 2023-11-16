@@ -15,37 +15,49 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: Set Label based on changes
+      - name: Add Assignee
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const issue_number = context.payload.pull_request.number;
-            const repo = context.repo.repo;
-            const owner = context.repo.owner;
-            const fs = require('fs');
-            const { execSync } = require('child_process');
+            const { number, user } = context.payload.pull_request;
+            await github.rest.issues.addAssignees({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: number,
+              assignees: [user.login]
+            });
+      # - name: Set Label based on changes
+      #   uses: actions/github-script@v6
+      #   with:
+      #     github-token: ${{ secrets.GITHUB_TOKEN }}
+      #     script: |
+      #       const issue_number = context.payload.pull_request.number;
+      #       const repo = context.repo.repo;
+      #       const owner = context.repo.owner;
+      #       const fs = require('fs');
+      #       const { execSync } = require('child_process');
 
-            // PRの変更されたファイルを取得
-            const files = JSON.parse(execSync(`gh pr view --json files --jq .files[].path ${issue_number}`).toString());
+      #       // PRの変更されたファイルを取得
+      #       const files = JSON.parse(execSync(`gh pr view --json files --jq .files[].path ${issue_number}`).toString());
 
-            let labels = new Set();
+      #       let labels = new Set();
 
-            for (const file of files) {
-              if (file.startsWith('front/')) {
-                labels.add('frontend');
-              } else if (file.startsWith('back/')) {
-                labels.add('backend');
-              } else if (file.startsWith('api/')) {
-                labels.add('documentation');
-              }
-            }
+      #       for (const file of files) {
+      #         if (file.startsWith('front/')) {
+      #           labels.add('frontend');
+      #         } else if (file.startsWith('back/')) {
+      #           labels.add('backend');
+      #         } else if (file.startsWith('api/')) {
+      #           labels.add('documentation');
+      #         }
+      #       }
 
-            if (labels.size > 0) {
-              github.issues.addLabels({
-                owner,
-                repo,
-                issue_number,
-                labels: Array.from(labels)
-              });
-            }
+      #       if (labels.size > 0) {
+      #         github.issues.addLabels({
+      #           owner,
+      #           repo,
+      #           issue_number,
+      #           labels: Array.from(labels)
+      #         });
+      # }
