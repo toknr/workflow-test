@@ -1,4 +1,4 @@
-name: Auto Label PR based on Changes
+name: auto labels pull request
 
 on:
   pull_request:
