@@ -18,8 +18,6 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const issue_number = context.payload.pull_request.number;
-            const repo = context.repo.repo;
-            const owner = context.repo.owner;
 
             // PRの変更されたファイルを取得
             const files = await github.pulls.listFiles({
@@ -36,7 +34,7 @@ jobs:
               } else if (file.filename.startsWith('src/back/')) {
                 labels.add('backend');
               } else if (file.filename.startsWith('src/api/')) {
-                labels.add('api');
+                labels.add('documantation');
               }
             }
 
