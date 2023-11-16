@@ -27,6 +27,43 @@ jobs:
               issue_number: number,
               assignees: [user.login]
             });
+
+      - name: Set Label based on changes
+        uses: actions/github-script@v3
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const issue_number = context.payload.pull_request.number;
+            const repo = context.repo.repo;
+            const owner = context.repo.owner;
+
+            // PRの変更されたファイルを取得
+            const files = await github.pulls.listFiles({
+              owner,
+              repo,
+              pull_number: issue_number,
+            });
+
+            let labels = new Set();
+
+            for (const file of files.data) {
+              if (file.filename.startsWith('front/')) {
+                labels.add('frontend');
+              } else if (file.filename.startsWith('back/')) {
+                labels.add('backend');
+              } else if (file.filename.startsWith('api/')) {
+                labels.add('api');
+              }
+            }
+
+            if (labels.size > 0) {
+              github.issues.addLabels({
+                owner,
+                repo,
+                issue_number,
+                labels: Array.from(labels)
+              });
+            }
       # - name: Set Label based on changes
       #   uses: actions/github-script@v6
       #   with:
