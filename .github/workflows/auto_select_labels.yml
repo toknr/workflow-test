@@ -18,13 +18,11 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const issue_number = context.payload.pull_request.number;
-            const repo = context.repo.repo;
-            const owner = context.repo.owner;
 
             // PRの変更されたファイルを取得
             const files = await github.pulls.listFiles({
-              owner,
-              repo,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
               pull_number: issue_number,
             });
 
