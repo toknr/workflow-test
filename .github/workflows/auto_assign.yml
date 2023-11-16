@@ -1,4 +1,4 @@
-name: Auto Assign PR
+name: auto assign pull request
 
 on:
   pull_request:
