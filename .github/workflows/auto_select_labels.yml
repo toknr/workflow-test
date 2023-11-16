@@ -1,0 +1,55 @@
+name: Auto Label PR based on Changes
+
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 100
+          ref: ${{ github.head_ref }}
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Set Label based on changes
+        uses: actions/github-script@v3
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { number, user } = context.payload.pull_request;
+            if (!pr.draft) {
+              // ドラフトではないPRの場合の処理
+
+              // PRの変更されたファイルを取得
+              const files = await github.pulls.listFiles({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: number,
+              });
+
+              let labels = new Set();
+
+              for (const file of files.data) {
+                if (file.filename.startsWith('front/')) {
+                  labels.add('frontend');
+                } else if (file.filename.startsWith('back/')) {
+                  labels.add('backend');
+                } else if (file.filename.startsWith('api/')) {
+                  labels.add('api');
+                }
+              }
+
+              if (labels.size > 0) {
+                github.issues.addLabels({
+                  owner,
+                  repo,
+                  issue_number,
+                  labels: Array.from(labels)
+                });
+              }
+
+            }

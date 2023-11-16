@@ -2,7 +2,7 @@ name: Auto Label PR based on Changes
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [opened]
 
 jobs:
   label:
@@ -20,81 +20,14 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const { number, user } = context.payload.pull_request;
-            await github.rest.issues.addAssignees({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: number,
-              assignees: [user.login]
-            });
-
-      - name: Set Label based on changes
-        uses: actions/github-script@v3
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const issue_number = context.payload.pull_request.number;
-            const repo = context.repo.repo;
-            const owner = context.repo.owner;
-
-            // PRの変更されたファイルを取得
-            const files = await github.pulls.listFiles({
-              owner,
-              repo,
-              pull_number: issue_number,
-            });
-
-            let labels = new Set();
-
-            for (const file of files.data) {
-              if (file.filename.startsWith('front/')) {
-                labels.add('frontend');
-              } else if (file.filename.startsWith('back/')) {
-                labels.add('backend');
-              } else if (file.filename.startsWith('api/')) {
-                labels.add('api');
-              }
-            }
-
-            if (labels.size > 0) {
-              github.issues.addLabels({
-                owner,
-                repo,
-                issue_number,
-                labels: Array.from(labels)
+            const pr = context.payload.pull_request;
+            if (pr.draft) {
+              // ドラフトPRの場合の処理
+              const { number, user } = context.payload.pull_request;
+              await github.rest.issues.addAssignees({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: number,
+                assignees: [user.login]
               });
             }
-      # - name: Set Label based on changes
-      #   uses: actions/github-script@v6
-      #   with:
-      #     github-token: ${{ secrets.GITHUB_TOKEN }}
-      #     script: |
-      #       const issue_number = context.payload.pull_request.number;
-      #       const repo = context.repo.repo;
-      #       const owner = context.repo.owner;
-      #       const fs = require('fs');
-      #       const { execSync } = require('child_process');
-
-      #       // PRの変更されたファイルを取得
-      #       const files = JSON.parse(execSync(`gh pr view --json files --jq .files[].path ${issue_number}`).toString());
-
-      #       let labels = new Set();
-
-      #       for (const file of files) {
-      #         if (file.startsWith('front/')) {
-      #           labels.add('frontend');
-      #         } else if (file.startsWith('back/')) {
-      #           labels.add('backend');
-      #         } else if (file.startsWith('api/')) {
-      #           labels.add('documentation');
-      #         }
-      #       }
-
-      #       if (labels.size > 0) {
-      #         github.issues.addLabels({
-      #           owner,
-      #           repo,
-      #           issue_number,
-      #           labels: Array.from(labels)
-      #         });
-      # }
