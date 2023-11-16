@@ -17,13 +17,15 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const { number, user } = context.payload.pull_request;
+            const issue_number = context.payload.pull_request.number;
+            const repo = context.repo.repo;
+            const owner = context.repo.owner;
 
             // PRの変更されたファイルを取得
             const files = await github.pulls.listFiles({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: number,
+              owner,
+              repo,
+              pull_number: issue_number,
             });
 
             let labels = new Set();
