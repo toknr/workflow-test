@@ -1,0 +1,46 @@
+name: Auto Label PR based on Changes
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set Label based on changes
+        uses: actions/github-script@v3
+        with:
+          script: |
+            const issue_number = context.payload.pull_request.number;
+            const repo = context.repo.repo;
+            const owner = context.repo.owner;
+            const fs = require('fs');
+            const { execSync } = require('child_process');
+
+            // PRの変更されたファイルを取得
+            const files = JSON.parse(execSync(`gh pr view --json files --jq .files[].path ${issue_number}`).toString());
+
+            let labels = new Set();
+
+            for (const file of files) {
+              if (file.startsWith('front/')) {
+                labels.add('frontend');
+              } else if (file.startsWith('back/')) {
+                labels.add('backend');
+              } else if (file.startsWith('api/')) {
+                labels.add('documentation');
+              }
+            }
+
+            if (labels.size > 0) {
+              github.issues.addLabels({
+                owner,
+                repo,
+                issue_number,
+                labels: Array.from(labels)
+              });
+            }
