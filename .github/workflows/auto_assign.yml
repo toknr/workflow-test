@@ -2,7 +2,7 @@ name: Auto Label PR based on Changes
 
 on:
   pull_request:
-    types: [opened]
+    types: [opened, ready_for_review]
 
 jobs:
   label:
@@ -12,9 +12,6 @@ jobs:
         with:
           fetch-depth: 100
           ref: ${{ github.head_ref }}
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
       - name: Add Assignee
         uses: actions/github-script@v6
         with:
