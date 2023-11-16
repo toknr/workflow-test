@@ -34,7 +34,7 @@ jobs:
               } else if (file.filename.startsWith('src/back/')) {
                 labels.add('backend');
               } else if (file.filename.startsWith('src/api/')) {
-                labels.add('documantation');
+                labels.add('documentation');
               }
             }
 
