@@ -1,4 +1,4 @@
-name: Auto Label PR based on Changes
+name: Auto Assign PR
 
 on:
   pull_request:
