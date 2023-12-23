@@ -1,0 +1,15 @@
+name: front client_test deploy
+
+on:
+  push:
+    branches:
+      - "client-test"
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 100
+          ref: ${{ github.head_ref }}
